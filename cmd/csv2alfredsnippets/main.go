@@ -58,10 +58,10 @@ func csvToAlfred(entry []string) *alfredEntry {
 	uid := uuid.New()
 
 	return &alfredEntry{
-		Snippet: entry[0],
+		Snippet: entry[2],
 		Uid:     uid.String(),
-		Name:    entry[1],
-		Keyword: entry[2],
+		Name:    entry[0],
+		Keyword: entry[1],
 	}
 }
 
