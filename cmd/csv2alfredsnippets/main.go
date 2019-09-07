@@ -1,10 +1,10 @@
 package main
 
 import (
+	"archive/zip"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/google/uuid"
@@ -22,12 +22,16 @@ func main() {
 		panic(err)
 	}
 
-	entry := csvToAlfred(records[0])
-	raw, err := dumpEntry(entry)
-	if err != nil {
-		panic(err)
+	var entries []*alfredEntry
+	for _, record := range records {
+		entry := csvToAlfred(record)
+		entries = append(entries, entry)
 	}
-	fmt.Println(string(raw))
+
+	err = createJsonEntries("test.alfredsnippets", entries)
+	if err != nil {
+		return
+	}
 }
 
 type alfredEntry struct {
@@ -53,10 +57,41 @@ func dumpEntry(entry *alfredEntry) ([]byte, error) {
 		return nil, errors.New("nil alfred entry")
 	}
 
-	raw, err := json.Marshal(entry)
+	raw, err := json.Marshal(struct {
+		AlfredSnippet *alfredEntry `json:"alfredsnippet"`
+	}{entry})
 	if err != nil {
 		return nil, err
 	}
 
 	return raw, nil
+}
+
+func createJsonEntries(filepath string, entries []*alfredEntry) (err error) {
+	file, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+
+	w := zip.NewWriter(file)
+
+	for _, entry := range entries {
+		name := entry.Name + " " + entry.Uid + ".json"
+		f, err := w.Create(name)
+		if err != nil {
+			return err
+		}
+
+		b, err := dumpEntry(entry)
+		if err != nil {
+			return err
+		}
+
+		_, err = f.Write(b)
+		if err != nil {
+			return err
+		}
+	}
+
+	return w.Close()
 }
