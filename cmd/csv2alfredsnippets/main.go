@@ -43,6 +43,7 @@ func main() {
 
 	err = createJsonEntries(flag.Arg(1), entries)
 	if err != nil {
+		log.Fatal(err)
 		return
 	}
 }
