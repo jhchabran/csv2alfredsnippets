@@ -5,21 +5,34 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"errors"
+	"flag"
+	"fmt"
+	"log"
 	"os"
 
 	"github.com/google/uuid"
 )
 
 func main() {
-	file, err := os.Open("/Users/tech/Downloads/snippets.csv")
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "usage: csv2alfedsnippets input.csv output.alfredsnippets\n")
+	}
+
+	flag.Parse()
+	if flag.NArg() != 2 {
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	file, err := os.Open(flag.Arg(0))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	var entries []*alfredEntry
@@ -28,7 +41,7 @@ func main() {
 		entries = append(entries, entry)
 	}
 
-	err = createJsonEntries("test.alfredsnippets", entries)
+	err = createJsonEntries(flag.Arg(1), entries)
 	if err != nil {
 		return
 	}
