@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -14,17 +13,12 @@ import (
 )
 
 func main() {
-	flag.Usage = func() {
+	if len(os.Args) != 3 {
 		fmt.Fprintf(os.Stderr, "usage: csv2alfedsnippets input.csv output.alfredsnippets\n")
-	}
-
-	flag.Parse()
-	if flag.NArg() != 2 {
-		flag.Usage()
 		os.Exit(1)
 	}
 
-	file, err := os.Open(flag.Arg(0))
+	file, err := os.Open(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,7 +35,7 @@ func main() {
 		entries = append(entries, entry)
 	}
 
-	err = createJsonEntries(flag.Arg(1), entries)
+	err = createJsonEntries(os.Args[2], entries)
 	if err != nil {
 		log.Fatal(err)
 		return
