@@ -22,6 +22,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer file.Close()
 
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
@@ -80,8 +81,15 @@ func createJsonEntries(filepath string, entries []*alfredEntry) (err error) {
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	w := zip.NewWriter(file)
+	defer func() {
+		e := w.Close()
+		if err == nil {
+			err = e
+		}
+	}()
 
 	for _, entry := range entries {
 		name := entry.Name + " " + entry.Uid + ".json"
@@ -101,5 +109,5 @@ func createJsonEntries(filepath string, entries []*alfredEntry) (err error) {
 		}
 	}
 
-	return w.Close()
+	return nil
 }
